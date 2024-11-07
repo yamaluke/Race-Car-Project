@@ -44,13 +44,14 @@ void loop(){
 
 
 // motion functoin: controls movment of the racecar 
-// weight can vary from -5 to 5:
-// 0 is straight, (-) is left, (+) is right, and the value is the weight for how much it turns
+// weight: 0 is straight, (-) is left, (+) is right, and the magnitude is the weight for how much it turns. 
+// the speed is how fast the car will move 
 void motion(int weight, int speed){
-    if(weight < 0){
+    if(weight > 0){
         analogWrite(left_pwm_pin, speed);
         analogWrite(right_pwm_pin, speed/weight);
-    }else if(weight > 0){
+    }else if(weight < 0){
+        weight *= -1;
         analogWrite(left_pwm_pin, speed/weight);
         analogWrite(right_pwm_pin, speed);
     }else{
