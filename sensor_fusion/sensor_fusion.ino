@@ -16,14 +16,15 @@ void setup()
 void loop()
 {
 
-  error();
+  errorCalculator();
 
   delay(50);
 }
 
 
 // Calculates the error using the sensor input data
-void errorCalculator(){
+// note must copy the minimum, maximum, and weights arrays for this function to work
+int errorCalculator(){
   ECE3_read_IR(sensorValues);
 
   float currentValue[8];
@@ -59,5 +60,6 @@ void errorCalculator(){
   }
   fused_values /= 8;
 
-  Serial.print(fused_values);
+  // Serial.print(fused_values);
+  return fused_values;
 }
