@@ -10,7 +10,7 @@ const int right_dir_pin=30;
 const int right_pwm_pin=39;
 
 //== Prototypes ==//
-void motion(int weight, int speed);
+void motion(float weight, int speed);
 
 
 //== Initial setup ==//
@@ -23,10 +23,10 @@ void setup(){
     pinMode(right_dir_pin,OUTPUT);
     pinMode(right_pwm_pin,OUTPUT);
 
-    digitalWrite(left_dir_pin,HIGH);
+    digitalWrite(left_dir_pin,LOW);
     digitalWrite(left_nslp_pin,HIGH);
     
-    digitalWrite(right_dir_pin,HIGH);
+    digitalWrite(right_dir_pin,LOW);
     digitalWrite(right_nslp_pin,HIGH);
 
 
@@ -46,7 +46,7 @@ void loop(){
 // motion functoin: controls movment of the racecar 
 // weight: 0 is straight, (-) is left, (+) is right, and the magnitude is the weight for how much it turns. 
 // the speed is how fast the car will move 
-void motion(int weight, int speed){
+void motion(float weight, int speed){
     if(weight > 0){
         analogWrite(left_pwm_pin, speed);
         analogWrite(right_pwm_pin, speed/weight);
