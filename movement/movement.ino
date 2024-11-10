@@ -99,6 +99,9 @@ void turn(float weight, int speed){
 // the speed is how fast the car will move 
 // note: Kp and Kd must be declared as global variables, also need to measure the black surface reading, and add that to global variable (STOPVALUE). STOPPOINTCOUNT also needs to be declared globally. 
 void motion(int location, int derLocation, int speed){
+    int turnRange = 1; // the point that the function decides to go from foward motion to turning motion
+
+    //== check to see if car is at checkpoint ==//
     if(derLocation == 0 && location == STOPVALUE){
         if(STOPPOINTCOUNT == 0){
             //uturn function
@@ -106,23 +109,24 @@ void motion(int location, int derLocation, int speed){
         }else{
             moveFoward(0,0);
         }
-    }
-    float weight = location*Kp + derLocation*Kd;
-    if(weight >= -2 && weight <= 2){
-        if (weight > 0){
-            weight += 1;
-        }
-        else{
-            weight -= 1;
-        }
-        moveFoward(weight, speed);
     }else{
-        if (weight > 0){
-            weight -= 1;
+        //== Calculate weight ==//
+        float weight = location*Kp + derLocation*Kd;
+        if(weight >= -(turnRange+1) && weight <= (turnRange+1)){
+            if (weight > 0){
+                weight += 1;
+            }else if(weight < 0){
+                weight -= 1;
+            }
+            moveFoward(weight, speed);
+        }else{
+            if (weight > 0){
+                weight -= turnRange;
+            }
+            else{
+                weight += turnRange;
+            }
+            turn(weight, speed)
         }
-        else{
-            weight += 1;
-        }
-        turn(weight, speed)
-    }
+    }    
 }
