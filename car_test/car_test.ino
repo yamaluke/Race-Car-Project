@@ -11,10 +11,10 @@ const int left_pwm_pin=40;
 const int right_nslp_pin=11; // nslp ==> awake & ready for PWM
 const int right_dir_pin=30;
 const int right_pwm_pin=39;
-float Kp = 1/1000.0;
-float Kd = 1/500.0;
+float Kp = 1.0/1000;
+float Kd = 1.0/500;
 const int STOPVALUE = 000;
-int STOPPOINTCOUNT = 0;
+int stopPointCount = 0;
 int previous_fused_value = 0;
 
 //== Prototypes ==//
@@ -186,11 +186,11 @@ void motion(int location, int derLocation, int speed){
 
     //== check to see if car is at checkpoint ==//
     if(derLocation == 0 && location == STOPVALUE){
-        if(STOPPOINTCOUNT == 0){
+        if(stopPointCount == 0){
             uturn(speed);
             moveFoward(0, speed);
             delay(50);
-            STOPPOINTCOUNT++;
+            stopPointCount++;
         }else{
             moveFoward(0,0);
         }
