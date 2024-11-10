@@ -1,4 +1,5 @@
 #include <ECE3.h>
+#include<math.h>
 
 uint16_t sensorValues[8];
 int minimum[8] = {782, 805, 712, 758, 574, 666, 707, 828};
@@ -12,11 +13,16 @@ const int right_dir_pin=30;
 const int right_pwm_pin=39;
 float Kp = 1/1000.0;
 float Kd = 1/500.0;
+const int STOPVALUE = 000;
+int STOPPOINTCOUNT = 0;
 int previous_fused_value = 0;
 
 //== Prototypes ==//
-void moveFoward(float weight, int speed);
 int errorCalculator();
+void moveFoward(float weight, int speed);
+void turn(float weight, int speed);
+void uturn(int speed);
+void motion(int location, int derLocation, int speed);
 
 
 //== Setup ==//
@@ -40,51 +46,24 @@ void setup()
 
     int baseSpd =40;
     moveFoward(0, baseSpd);
-    Serial.begin(9600);
+    // Serial.begin(9600);
 }
 
 
 //== Loop ==//
 void loop()
 {
-
   int fused_values=errorCalculator();
   int baseSpd = 40;
   float derivative_error;
   derivative_error = (fused_values - previous_fused_value);
   
-  float weight = fused_values*Kp; //+ derivative_error*Kd;
+  motion(fused_values,derivative_error, baseSpd);
   
-  if (weight > 0){
-     weight += 1;
-  }
-  else{
-    weight -= 1;
-  }
-  
-  moveFoward(weight, baseSpd);
   previous_fused_value = fused_values;
 
-  Serial.println(weight);
-//  delay(50);
-}
-
-
-// moveFoward function: controls movment of the racecar 
-// weight: 0 is straight, (-) is left, (+) is right, and the magnitude is the weight for how much it turns. 
-// the speed is how fast the car will move 
-void moveFoward(float weight, int speed){
-    if(weight > 0){
-        analogWrite(left_pwm_pin, speed);
-        analogWrite(right_pwm_pin, speed/weight);
-    }else if(weight < 0){
-        weight *= -1;
-        analogWrite(left_pwm_pin, speed/weight);
-        analogWrite(right_pwm_pin, speed);
-    }else{
-        analogWrite(left_pwm_pin, speed);
-        analogWrite(right_pwm_pin, speed);
-    }
+  // Serial.println(weight);
+  // delay(50);
 }
 
 
@@ -128,4 +107,113 @@ int errorCalculator(){
 
   //Serial.println(fused_values);
   return fused_values;
+}
+
+
+// motion functoin: controls movment of the racecar 
+// weight: 0 is straight, (-) is left, (+) is right, and the magnitude is the weight for how much it turns. The larger the weight, the tighter the turn.  
+// the speed is how fast the car will move 
+void moveFoward(float weight, int speed){
+    // make both wheels go foward
+    digitalWrite(right_dir_pin,LOW);
+    digitalWrite(left_dir_pin,LOW);
+
+    // set the speed of the wheels
+    if(weight > 0){             // turn right
+        analogWrite(left_pwm_pin, speed);
+        analogWrite(right_pwm_pin, speed/weight);
+    }else if(weight < 0){       // turn left
+        weight *= -1;
+        analogWrite(left_pwm_pin, speed/weight);
+        analogWrite(right_pwm_pin, speed);
+    }else{                      // straight
+        analogWrite(left_pwm_pin, speed);
+        analogWrite(right_pwm_pin, speed);
+    }
+}
+
+
+// turn: used to make very tight turns
+// weight: between -5.5 and 5.5, no zero, (-) is left, (+) is right, and the magnitude is the weight for how much it turns. 
+// the speed is how fast the car will move 
+void turn(float weight, int speed){
+    if(weight > 0){             // turn right 
+        digitalWrite(right_dir_pin,HIGH);
+        digitalWrite(left_dir_pin,LOW); 
+
+        analogWrite(left_pwm_pin, speed);
+        analogWrite(right_pwm_pin, speed * log(weight/2));
+    }else if(weight < 0){       // turn left
+        digitalWrite(right_dir_pin,LOW);
+        digitalWrite(left_dir_pin,HIGH); 
+
+        weight *= -1;
+
+        analogWrite(left_pwm_pin, speed * log(weight/2));
+        analogWrite(right_pwm_pin, speed);
+    }
+}
+
+
+//uturn: make a 360 degree rotation at checkpoint
+void uturn(int speed){
+    int location;
+    int preLocation;
+    int derivativeValue = -1;
+
+    turn(5.5,speed);
+    delay(50);
+
+    location = errorCalculator();
+    preLocation = location;
+    
+    while(location != STOPVALUE || derivativeValue == 0){
+        // calculate new sensor and derivative value 
+        location = errorCalculator();
+        derivativeValue = location - preLocation;
+        preLocation = location;
+    }
+    moveFoward(0,0);
+}
+
+
+// motion: control center for car movement
+// weight: 0 is straight, (-) is left, (+) is right, and the magnitude is the weight for how much it turns. 
+// the speed is how fast the car will move 
+// note: Kp and Kd must be declared as global variables, also need to measure the black surface reading, and add that to global variable (STOPVALUE). STOPPOINTCOUNT also needs to be declared globally. 
+void motion(int location, int derLocation, int speed){
+    int turnRange = 1; // the point that the function decides to go from foward motion to turning motion
+
+    //== check to see if car is at checkpoint ==//
+    if(derLocation == 0 && location == STOPVALUE){
+        if(STOPPOINTCOUNT == 0){
+            uturn(speed);
+            moveFoward(0, speed);
+            delay(50);
+            STOPPOINTCOUNT++;
+        }else{
+            moveFoward(0,0);
+        }
+    }else{
+        //== Calculate weight ==//
+        float weight = location*Kp + derLocation*Kd;
+
+        //== Determine what kind of turn to make ==//
+        if(weight >= -(turnRange+1) && weight <= (turnRange+1)){
+            if (weight > 0){
+                weight += 1;
+            }else if(weight < 0){
+                weight -= 1;
+            }
+            moveFoward(weight, speed);
+        }else{
+            if (weight > 0){
+                weight -= turnRange;
+            }
+            else{
+                weight += turnRange;
+            }
+            turn(weight, speed)
+        }
+    }    
 }

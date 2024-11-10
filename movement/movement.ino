@@ -17,6 +17,8 @@ int STOPPOINTCOUNT = 0;
 //== Prototypes ==//
 void moveFoward(float weight, int speed);
 void turn(float weight, int speed);
+void uturn(int speed);
+void motion(int location, int derLocation, int speed);
 
 
 //== Initial setup ==//
@@ -73,7 +75,7 @@ void moveFoward(float weight, int speed){
 
 
 // turn: used to make very tight turns
-// weight: between -5 and 5, no zero, (-) is left, (+) is right, and the magnitude is the weight for how much it turns. 
+// weight: between -5.5 and 5.5, no zero, (-) is left, (+) is right, and the magnitude is the weight for how much it turns. 
 // the speed is how fast the car will move 
 void turn(float weight, int speed){
     if(weight > 0){             // turn right 
@@ -81,16 +83,27 @@ void turn(float weight, int speed){
         digitalWrite(left_dir_pin,LOW); 
 
         analogWrite(left_pwm_pin, speed);
-        analogWrite(right_pwm_pin, speed * log(weight));
+        analogWrite(right_pwm_pin, speed * log(weight/2));
     }else if(weight < 0){       // turn left
         digitalWrite(right_dir_pin,LOW);
         digitalWrite(left_dir_pin,HIGH); 
 
         weight *= -1;
 
-        analogWrite(left_pwm_pin, speed * log(weight));
+        analogWrite(left_pwm_pin, speed * log(weight/2));
         analogWrite(right_pwm_pin, speed);
     }
+}
+
+
+//uturn: make a 360 degree rotation at checkpoint
+void uturn(int speed){
+    turn(5.5,speed);
+    delay(50);
+    while(/*sensor value*/ != STOPVALUE && /*derivative value*/ == 0){
+        // calculate new sensor and derivative value 
+    }
+    moveFoward(0,0);
 }
 
 
@@ -105,6 +118,8 @@ void motion(int location, int derLocation, int speed){
     if(derLocation == 0 && location == STOPVALUE){
         if(STOPPOINTCOUNT == 0){
             //uturn function
+            moveFoward(0, speed)
+            delay(50);
             STOPPOINTCOUNT++;
         }else{
             moveFoward(0,0);
@@ -112,6 +127,8 @@ void motion(int location, int derLocation, int speed){
     }else{
         //== Calculate weight ==//
         float weight = location*Kp + derLocation*Kd;
+
+        //== Determine what kind of turn to make ==//
         if(weight >= -(turnRange+1) && weight <= (turnRange+1)){
             if (weight > 0){
                 weight += 1;
