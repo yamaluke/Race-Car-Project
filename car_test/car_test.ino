@@ -30,23 +30,23 @@ void setup()
 {
   ECE3_Init();
   pinMode(left_nslp_pin,OUTPUT);
-    pinMode(left_dir_pin,OUTPUT);
-    pinMode(left_pwm_pin,OUTPUT);
-    
-    pinMode(right_nslp_pin,OUTPUT);
-    pinMode(right_dir_pin,OUTPUT);
-    pinMode(right_pwm_pin,OUTPUT);
+  pinMode(left_dir_pin,OUTPUT);
+  pinMode(left_pwm_pin,OUTPUT);
+  
+  pinMode(right_nslp_pin,OUTPUT);
+  pinMode(right_dir_pin,OUTPUT);
+  pinMode(right_pwm_pin,OUTPUT);
 
-    digitalWrite(left_dir_pin,LOW);
-    digitalWrite(left_nslp_pin,HIGH);
-    
-    digitalWrite(right_dir_pin,LOW);
-    digitalWrite(right_nslp_pin,HIGH);
+  digitalWrite(left_dir_pin,LOW);
+  digitalWrite(left_nslp_pin,HIGH);
+  
+  digitalWrite(right_dir_pin,LOW);
+  digitalWrite(right_nslp_pin,HIGH);
 
 
-    int baseSpd =40;
-    moveFoward(0, baseSpd);
-    // Serial.begin(9600);
+  int baseSpd =40;
+  moveFoward(0, baseSpd);
+  // Serial.begin(9600);
 }
 
 
