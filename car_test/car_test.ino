@@ -55,7 +55,7 @@ void loop()
 {
   int fused_values=errorCalculator();
   int baseSpd = 40;
-  float derivative_error;
+  int derivative_error;
   derivative_error = (fused_values - previous_fused_value);
   
   motion(fused_values,derivative_error, baseSpd);
