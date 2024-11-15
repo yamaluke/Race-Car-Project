@@ -12,7 +12,7 @@ const int right_nslp_pin=11; // nslp ==> awake & ready for PWM
 const int right_dir_pin=30;
 const int right_pwm_pin=39;
 float Kp = 1.0/1000;
-float Kd = 1.0/500;
+float Kd = 1.0/200;
 const int STOPVALUE = 000;
 int stopPointCount = 0;
 int previous_fused_value = 0;
@@ -55,7 +55,7 @@ void setup()
 void loop()
 {
   int fused_values=errorCalculator();
-  int baseSpd = 40;
+  int baseSpd = 60;
   int derivative_error;
   derivative_error = (fused_values - previous_fused_value);
   
@@ -71,38 +71,39 @@ void loop()
 // errorCalculator: Calculates the error using the sensor input data
 // note must copy the minimum, maximum, and weights arrays for this function to work
 int errorCalculator(){
-    sensorState = 0;
+    sensorState = -1;
     ECE3_read_IR(sensorValues);
 
     float currentValue[8];
     int fused_values = 0;
 
+
     for (int i = 0; i < 8; i++){
-    // check if value is in the bounds for minimum 
-    //    if(sensorValues[i] < minimum[i]){
-    //      minimum[i] = sensorValues[i];
-    //    }
+        // check if value is in the bounds for minimum 
+        //    if(sensorValues[i] < minimum[i]){
+        //      minimum[i] = sensorValues[i];
+        //    }
 
-    if(currentValue[i] == 0){
+        if(currentValue[i] < 2000){
+            sensorState = 0;
+        }
 
-    }
+        //subtract minimum
+        currentValue[i] = (float)sensorValues[i] - minimum[i];
 
-    //subtract minimum
-    currentValue[i] = (float)sensorValues[i] - minimum[i];
+        // check to see if sensor value is in maximum bound 
+        //    if(currentValue[i] > maximum[i]){
+        //      maximum[i] = currentValue[i];
+        //    }
 
-    // check to see if sensor value is in maximum bound 
-    //    if(currentValue[i] > maximum[i]){
-    //      maximum[i] = currentValue[i];
-    //    }
+        //divide by maximum
+        currentValue[i] /= maximum[i];
 
-    //divide by maximum
-    currentValue[i] /= maximum[i];
+        //multiply by 1000
+        currentValue[i] *= 1000;
 
-    //multiply by 1000
-    currentValue[i] *= 1000;
-
-    //multiply by weights
-    currentValue[i] *= weights[i];
+        //multiply by weights
+        currentValue[i] *= weights[i];
     }
 
     //take average
@@ -168,7 +169,7 @@ void uturn(){
     // int derivativeValue = -1;
     int speed = 50;
     turn(5.5,speed);
-    delay(500);
+    delay(1420);
 
     // location = errorCalculator();
     // preLocation = location;
@@ -188,14 +189,14 @@ void uturn(){
 // the speed is how fast the car will move 
 // note: Kp and Kd must be declared as global variables, also need to measure the black surface reading, and add that to global variable (STOPVALUE). STOPPOINTCOUNT also needs to be declared globally. 
 void motion(int location, int derLocation, int speed){
-    int turnRange = 1; // the point that the function decides to go from foward motion to turning motion
+    int turnRange = 0; // the point that the function decides to go from foward motion to turning motion
 
     //== check to see if car is at checkpoint ==//
-    if(derLocation == 0 && location == STOPVALUE){
+    if(derLocation == 0 && sensorState == -1){
         if(stopPointCount == 0){
-            uturn(speed);
+            uturn();
             moveFoward(0, speed);
-            delay(100);
+            delay(500);
             stopPointCount++;
         }else{
             moveFoward(0,0);
