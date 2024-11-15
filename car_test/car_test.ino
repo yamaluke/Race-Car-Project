@@ -16,6 +16,7 @@ float Kd = 1.0/500;
 const int STOPVALUE = 000;
 int stopPointCount = 0;
 int previous_fused_value = 0;
+int sensorState = 0     // 0: on track, 1: off track, -1: on black
 
 //== Prototypes ==//
 int errorCalculator();
@@ -70,24 +71,29 @@ void loop()
 // errorCalculator: Calculates the error using the sensor input data
 // note must copy the minimum, maximum, and weights arrays for this function to work
 int errorCalculator(){
-  ECE3_read_IR(sensorValues);
+    sensorState = 0;
+    ECE3_read_IR(sensorValues);
 
-  float currentValue[8];
-  int fused_values = 0;
+    float currentValue[8];
+    int fused_values = 0;
 
-  for (int i = 0; i < 8; i++){
+    for (int i = 0; i < 8; i++){
     // check if value is in the bounds for minimum 
-//    if(sensorValues[i] < minimum[i]){
-//      minimum[i] = sensorValues[i];
-//    }
+    //    if(sensorValues[i] < minimum[i]){
+    //      minimum[i] = sensorValues[i];
+    //    }
+
+    if(currentValue[i] == 0){
+
+    }
 
     //subtract minimum
     currentValue[i] = (float)sensorValues[i] - minimum[i];
 
     // check to see if sensor value is in maximum bound 
-//    if(currentValue[i] > maximum[i]){
-//      maximum[i] = currentValue[i];
-//    }
+    //    if(currentValue[i] > maximum[i]){
+    //      maximum[i] = currentValue[i];
+    //    }
 
     //divide by maximum
     currentValue[i] /= maximum[i];
@@ -97,16 +103,16 @@ int errorCalculator(){
 
     //multiply by weights
     currentValue[i] *= weights[i];
-  }
+    }
 
-  //take average
-  for (int i = 0; i < 8; i++){
-    fused_values += currentValue[i];   
-  }
-  fused_values /= 8;
+    //take average
+    for (int i = 0; i < 8; i++){
+        fused_values += currentValue[i];   
+    }
+    fused_values /= 8;
 
-  //Serial.println(fused_values);
-  return fused_values;
+    //Serial.println(fused_values);
+    return fused_values;
 }
 
 
@@ -199,21 +205,24 @@ void motion(int location, int derLocation, int speed){
         float weight = location*Kp + derLocation*Kd;
 
         //== Determine what kind of turn to make ==//
-        if(weight >= -(turnRange+1) && weight <= (turnRange+1)){
-            if (weight > 0){
+        if(weight > 0){
+            if(weight >= -(turnRange+1) && weight <= (turnRange+1)){
                 weight += 1;
-            }else if(weight < 0){
-                weight -= 1;
-            }
-            moveFoward(weight, speed);
-        }else{
-            if (weight > 0){
+                moveFoward(weight, speed);
+            }else{
                 weight -= turnRange;
+                turn(weight, speed);
             }
-            else{
+        }else if (weight < 0){
+            if(weight >= -(turnRange+1) && weight <= (turnRange+1)){
+                weight -= 1;
+                moveFoward(weight, speed);
+            }else{
                 weight += turnRange;
+                turn(weight, speed);
             }
-            turn(weight, speed)
+        }else{
+            moveFoward(weight,speed);
         }
     }    
 }
