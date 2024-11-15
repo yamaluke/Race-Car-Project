@@ -22,7 +22,7 @@ int sensorState = 0     // 0: on track, 1: off track, -1: on black
 int errorCalculator();
 void moveFoward(float weight, int speed);
 void turn(float weight, int speed);
-void uturn(int speed);
+void uturn();
 void motion(int location, int derLocation, int speed);
 
 
@@ -161,25 +161,25 @@ void turn(float weight, int speed){
 }
 
 
-//uturn: make a 360 degree rotation at checkpoint
-void uturn(int speed){
-    int location;
-    int preLocation;
-    int derivativeValue = -1;
-
+//uturn: make a 180 degree rotation at checkpoint
+void uturn(){
+    // int location;
+    // int preLocation;
+    // int derivativeValue = -1;
+    int speed = 50;
     turn(5.5,speed);
-    delay(50);
+    delay(500);
 
-    location = errorCalculator();
-    preLocation = location;
+    // location = errorCalculator();
+    // preLocation = location;
     
-    while(location != STOPVALUE || derivativeValue == 0){
-        // calculate new sensor and derivative value 
-        location = errorCalculator();
-        derivativeValue = location - preLocation;
-        preLocation = location;
-    }
-    moveFoward(0,0);
+    // while(location != STOPVALUE || derivativeValue == 0){
+    //     // calculate new sensor and derivative value 
+    //     location = errorCalculator();
+    //     derivativeValue = location - preLocation;
+    //     preLocation = location;
+    // }
+    // moveFoward(0,0);
 }
 
 
@@ -195,7 +195,7 @@ void motion(int location, int derLocation, int speed){
         if(stopPointCount == 0){
             uturn(speed);
             moveFoward(0, speed);
-            delay(50);
+            delay(100);
             stopPointCount++;
         }else{
             moveFoward(0,0);
@@ -214,7 +214,7 @@ void motion(int location, int derLocation, int speed){
                 turn(weight, speed);
             }
         }else if (weight < 0){
-            if(weight >= -(turnRange+1) && weight <= (turnRange+1)){
+            if(-weight >= -(turnRange+1) && -weight <= (turnRange+1)){
                 weight -= 1;
                 moveFoward(weight, speed);
             }else{
