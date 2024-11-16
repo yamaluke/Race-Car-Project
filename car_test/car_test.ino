@@ -122,7 +122,7 @@ int errorCalculator(){
     for (int i = 0; i < 8; i++){
         // used to check if car is on black square
         // if it isn't, then at least one of the sensors will read a value less then 2000
-        if(currentValue[i] < 2000){
+        if(sensorValues[i] < 2000){
             sensorState = 0;
         }
 
