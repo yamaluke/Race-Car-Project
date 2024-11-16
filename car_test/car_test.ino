@@ -1,6 +1,10 @@
 #include <ECE3.h>
 #include<math.h>
 
+//==!! Design note: adding a way to increase speed when going straight motion function line 266
+//==!!              increase uturn speed line 210
+//==!!              on line 232 added a starting black square condition, if starting black box doesn't get read, then set the starting and reset stopPointCount to 1
+
 //======================//
 //== Global Variables ==//
 //======================//
@@ -72,7 +76,7 @@ void setup()
 void loop()
 {
     // move car if stopPointCount hasn't reached its limit
-    if(stopPointCount < 2){
+    if(stopPointCount < 3){
         int fused_values=errorCalculator();
         int baseSpd = 60;
         int derivative_error;
@@ -226,14 +230,16 @@ void motion(int location, int derLocation, int speed){
     //== check to see if car is at checkpoint ==//
     if(derLocation == 0 && sensorState == -1){
         if(stopPointCount == 0){
+            moveFoward(0,speed);
+            delay(500);
+        }else if(stopPointCount == 1){
             uturn();
             moveFoward(0, speed);
             delay(500);
-            stopPointCount++;
         }else{
             moveFoward(0,0);
-            stopPointCount++;
         }
+        stopPointCount++;
     }else{
         //== Calculate weight ==//
         float weight = location*Kp + derLocation*Kd;
