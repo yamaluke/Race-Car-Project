@@ -18,6 +18,7 @@ const int right_nslp_pin=11; // nslp ==> awake & ready for PWM
 const int right_dir_pin=30;
 const int right_pwm_pin=39;
 const int LED_RF = 41;
+const int user_sw_2_pin=74;
 
 //== weights and other variables used by functions ==//
 int previous_fused_value = 0;       // holds the previous fused value, and will be used to calculate the change 
@@ -25,6 +26,7 @@ float Kp = 1.0/1000;                // proportional constant to calculate weight
 float Kd = 1.0/200;                 // derivative constant to calculate weight of turn
 int stopPointCount = 0;             // number of times that the car has been on the black square 
 int sensorState = 0;                // Used to determine if the car is on the black square; 0: on track, 1: off track, -1: on black
+bool user_sw_2_reading = false;     // determine if user switch was pressed
 
 
 //================//
@@ -35,6 +37,7 @@ void moveFoward(float weight, int speed);
 void turn(float weight, int speed);
 void uturn();
 void motion(int location, int derLocation, int speed);
+void stopPointCountReset()
 
 
 //===========//
@@ -69,17 +72,30 @@ void setup()
 //==========//
 void loop()
 {
-  int fused_values=errorCalculator();
-  int baseSpd = 60;
-  int derivative_error;
-  derivative_error = (fused_values - previous_fused_value);
-  
-  motion(fused_values,derivative_error, baseSpd);
-  
-  previous_fused_value = fused_values;
+    // move car if stopPointCount hasn't reached its limit
+    if(stopPointCount < 2){
+        int fused_values=errorCalculator();
+        int baseSpd = 60;
+        int derivative_error;
+        derivative_error = (fused_values - previous_fused_value);
 
-  // Serial.println(weight);
-  // delay(50);
+        motion(fused_values,derivative_error, baseSpd);
+
+        previous_fused_value = fused_values;
+
+        // Serial.println(weight);
+        // delay(50);
+    }else{
+        moveFoward(0,0);
+    }
+
+    // if user presses switch, then reset the stopPointCount, allowing the car to move again
+    user_sw_2_reading = digitalRead(user_sw_2_pin); 
+    if(user_sw_2_reading){
+        stopPointCount = 0;
+        digitalWrite(LED_RF,LOW);
+        delay(1000)
+    }
 }
 
 
@@ -218,6 +234,7 @@ void motion(int location, int derLocation, int speed){
             stopPointCount++;
         }else{
             moveFoward(0,0);
+            stopPointCount++;
         }
     }else{
         //== Calculate weight ==//
