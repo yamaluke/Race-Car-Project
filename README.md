@@ -1,5 +1,5 @@
 Main program located in **carDriver**. \
-Currently still in development. \
+Currently still in development. 
 
 GivenFiles - contains files given for testing \
 carDriver - has main program that is going to be used by car during race \
