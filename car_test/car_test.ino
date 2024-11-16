@@ -197,10 +197,15 @@ void uturn(){
 }
 
 
-// motion: control center for car movement
-// weight: 0 is straight, (-) is left, (+) is right, and the magnitude is the weight for how much it turns. 
-// the speed is how fast the car will move 
-// note: Kp and Kd must be declared as global variables, also need to measure the black surface reading, and add that to global variable (STOPVALUE). STOPPOINTCOUNT also needs to be declared globally. 
+//== motion: control center for car movment                   ==//
+// Input:   location (int): also called error, location on track//
+//          derLocation (int): change in location compared to   // 
+//          previous value.                                     //
+//          speed (int): determines speed of car                //             
+// Output:  (void) moves the car based on the weights, will     //
+//          select either uturn, moveFoward, or turn.           //
+// Note:    Kp, Kd, sensorState, stopPointCount must be         // 
+//          declared in global scope.                           //
 void motion(int location, int derLocation, int speed){
     int turnRange = 0; // the point that the function decides to go from foward motion to turning motion
 
