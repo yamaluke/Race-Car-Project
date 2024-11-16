@@ -4,6 +4,7 @@
 //==!! Design note: adding a way to increase speed when going straight motion function line 266
 //==!!              increase uturn speed line 210
 //==!!              on line 232 added a starting black square condition, if starting black box doesn't get read, then set the starting and reset stopPointCount to 1
+//==!!              could increase start speed, on line 236
 
 //======================//
 //== Global Variables ==//
@@ -26,12 +27,12 @@ const int user_sw_2_pin=74;
 
 //== weights and other variables used by functions ==//
 int previous_fused_value = 0;       // holds the previous fused value, and will be used to calculate the change 
-float Kp = 1.0/1000;                // proportional constant to calculate weight of turn
-float Kd = 1.0/200;                 // derivative constant to calculate weight of turn
 int stopPointCount = 0;             // number of times that the car has been on the black square 
 int sensorState = 0;                // Used to determine if the car is on the black square; 0: on track, 1: off track, -1: on black
 bool user_sw_2_reading = false;     // determine if user switch was pressed
 
+//= Adaptive Speed on/off button ==//
+bool adaptiveSpeedButton = false;
 
 //================//
 //== Prototypes ==//
@@ -41,6 +42,7 @@ void moveFoward(float weight, int speed);
 void turn(float weight, int speed);
 void uturn();
 void motion(int location, int derLocation, int speed);
+int adaptiveSpeed(float weight, int speed);
 
 
 //===========//
@@ -80,6 +82,7 @@ void loop()
         int fused_values=errorCalculator();
         int baseSpd = 60;
         int derivative_error;
+
         derivative_error = (fused_values - previous_fused_value);
 
         motion(fused_values,derivative_error, baseSpd);
@@ -222,10 +225,12 @@ void uturn(){
 //          speed (int): determines speed of car                //             
 // Output:  (void) moves the car based on the weights, will     //
 //          select either uturn, moveFoward, or turn.           //
-// Note:    Kp, Kd, sensorState, stopPointCount must be         // 
-//          declared in global scope.                           //
+// Note:    sensorState and stopPointCount must be declared     // 
+//          in global scope.                                    //
 void motion(int location, int derLocation, int speed){
     int turnRange = 0; // the point that the function decides to go from foward motion to turning motion
+    float Kp = 1.0/1000;                // proportional constant to calculate weight of turn
+    float Kd = 1.0/200;                 // derivative constant to calculate weight of turn
 
     //== check to see if car is at checkpoint ==//
     if(derLocation == 0 && sensorState == -1){
@@ -246,6 +251,7 @@ void motion(int location, int derLocation, int speed){
 
         //== Determine if weight is positive, negative, or 0 ==//
         if(weight > 0){
+            speed = adaptiveSpeed(weight, speed);
             //== Determine type of turn to make when weight is positive ==//
             // if |weight| < turnRange+1, will use moveFoward function, and if not will use turn function
             if(weight >= -(turnRange+1) && weight <= (turnRange+1)){
@@ -256,6 +262,7 @@ void motion(int location, int derLocation, int speed){
                 turn(weight, speed);
             }
         }else if (weight < 0){
+            speed = adaptiveSpeed(-weight, speed);
             //== Determine type of turn to make when weight is negative ==//
             // if |weight| < turnRange+1, will use moveFoward function, and if not will use turn function
             if(-weight >= -(turnRange+1) && -weight <= (turnRange+1)){
@@ -267,8 +274,42 @@ void motion(int location, int derLocation, int speed){
             }
         }else{
             //== when weight is 0, simply move foward ==//
-            //==!! design note: could multiply speed because system is stable
+            speed = adaptiveSpeed(0, speed);    
             moveFoward(weight,speed);
         }
     }    
+}
+
+
+//== adaptiveSpeed: adjust speed based on weight              ==//
+// Input:   weight (float): must be positive the lower the      //
+//          weight, the faster the car moves.                   //            
+// Output:  (int) updated speed                                 //
+// Note:    By changing the maxSpeed and minSpeed variable, we  // 
+//          can change the range of speed for car.              //
+//          Must have adaptiveSpeedButton in global scope, and  //
+//          must be set to 'true' for this function to run.     //
+int adaptiveSpeed(float weight, int speed){
+    //== determine if adaptive speed is on or off ==//
+    if(!adaptiveSpeedButton){
+        return speed;
+    }
+
+    //== determine new speed ==//
+    int maxSpeed = 250;
+    int minSpeed = 40;
+    weight++;
+    
+    if(weight == 1){
+        return maxSpeed;
+    }else{
+        speed /= log(weight);
+        if(speed > maxSpeed){
+            return maxSpeed;
+        }else if(speed < minSpeed){
+            return minSpeed;
+        }else{
+            return speed;
+        }
+    }
 }
