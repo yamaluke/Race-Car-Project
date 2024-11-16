@@ -1,7 +1,7 @@
 #include <ECE3.h>
 #include<math.h>
 
-//==!! Design note: adding a way to increase speed when going straight motion function line 266
+//==!! Design note: 
 //==!!              increase uturn speed line 210
 //==!!              on line 232 added a starting black square condition, if starting black box doesn't get read, then set the starting and reset stopPointCount to 1
 //==!!              could increase start speed, on line 236
@@ -32,7 +32,7 @@ int sensorState = 0;                // Used to determine if the car is on the bl
 bool user_sw_2_reading = false;     // determine if user switch was pressed
 
 //= Adaptive Speed on/off button ==//
-bool adaptiveSpeedButton = false;
+bool adaptiveSpeedButton = false;   // false = off, true = on
 
 //================//
 //== Prototypes ==//
@@ -66,8 +66,8 @@ void setup()
   digitalWrite(right_nslp_pin,HIGH);
 
 
-  int baseSpd =40;
-  moveFoward(0, baseSpd);
+//   int baseSpd =40;
+//   moveFoward(0, baseSpd);
   // Serial.begin(9600);
 }
 
@@ -228,12 +228,13 @@ void uturn(){
 // Note:    sensorState and stopPointCount must be declared     // 
 //          in global scope.                                    //
 void motion(int location, int derLocation, int speed){
-    int turnRange = 0; // the point that the function decides to go from foward motion to turning motion
-    float Kp = 1.0/1000;                // proportional constant to calculate weight of turn
-    float Kd = 1.0/200;                 // derivative constant to calculate weight of turn
+    int turnRange = 0;      // the point that the function decides to go from foward motion to turning motion
+    float Kp = 1.0/1000;    // proportional constant to calculate weight of turn
+    float Kd = 1.0/200;     // derivative constant to calculate weight of turn
 
     //== check to see if car is at checkpoint ==//
     if(derLocation == 0 && sensorState == -1){
+        speed = adaptiveSpeed(0, speed);
         if(stopPointCount == 0){
             moveFoward(0,speed);
             delay(500);
@@ -282,13 +283,14 @@ void motion(int location, int derLocation, int speed){
 
 
 //== adaptiveSpeed: adjust speed based on weight              ==//
-// Input:   weight (float): must be positive the lower the      //
-//          weight, the faster the car moves.                   //            
+// Input:   weight (float): must be positive or 0.              //
+//          The lower the weight, the faster the car moves.     //            
 // Output:  (int) updated speed                                 //
 // Note:    By changing the maxSpeed and minSpeed variable, we  // 
 //          can change the range of speed for car.              //
 //          Must have adaptiveSpeedButton in global scope, and  //
 //          must be set to 'true' for this function to run.     //
+//          If called with no arguments, will return maxSpeed.  //
 int adaptiveSpeed(float weight, int speed){
     //== determine if adaptive speed is on or off ==//
     if(!adaptiveSpeedButton){
@@ -298,12 +300,13 @@ int adaptiveSpeed(float weight, int speed){
     //== determine new speed ==//
     int maxSpeed = 250;
     int minSpeed = 40;
+    float Ks = 1.3;         // constant for weight, larger = slower, smaller = faster
     weight++;
     
     if(weight == 1){
         return maxSpeed;
     }else{
-        speed /= log(weight);
+        speed /= log(weight*Ks);
         if(speed > maxSpeed){
             return maxSpeed;
         }else if(speed < minSpeed){
