@@ -37,7 +37,6 @@ void moveFoward(float weight, int speed);
 void turn(float weight, int speed);
 void uturn();
 void motion(int location, int derLocation, int speed);
-void stopPointCountReset()
 
 
 //===========//
@@ -97,7 +96,6 @@ void loop()
         delay(1000)
     }
 }
-
 
 
 //=====================//
