@@ -4,7 +4,6 @@
 //==!! Design note: 
 //==!!              increase uturn speed line 210
 //==!!              on line 232 added a starting black square condition, if starting black box doesn't get read, then set the starting and reset stopPointCount to 1
-//==!!              could increase start speed, on line 236
 
 //======================//
 //== Global Variables ==//
