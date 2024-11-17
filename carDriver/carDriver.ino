@@ -300,19 +300,15 @@ int adaptiveSpeed(float weight, int speed){
     //== determine new speed ==//
     int maxSpeed = 250;
     int minSpeed = 40;
-    float Ks = 1.3;         // constant for weight, larger = slower, smaller = faster
+    float Ks = 1.3;         // constant for weight, must be greater than 1, larger = slower, smaller = faster
     weight++;
     
-    if(weight == 1){
+    speed /= log(weight*Ks);
+    if(speed > maxSpeed){
         return maxSpeed;
+    }else if(speed < minSpeed){
+        return minSpeed;
     }else{
-        speed /= log(weight*Ks);
-        if(speed > maxSpeed){
-            return maxSpeed;
-        }else if(speed < minSpeed){
-            return minSpeed;
-        }else{
-            return speed;
-        }
+        return speed;
     }
 }
