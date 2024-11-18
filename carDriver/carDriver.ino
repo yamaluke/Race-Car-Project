@@ -4,6 +4,7 @@
 //==!! Design note: 
 //==!!              increase uturn speed line 210
 //==!!              on line 232 added a starting black square condition, if starting black box doesn't get read, then set the starting and reset stopPointCount to 1
+//==!!              potentially drop the der == 0 condition on line 239, with higher speed it might not work
 
 //======================//
 //== Global Variables ==//
@@ -49,21 +50,22 @@ int adaptiveSpeed(float weight, int speed);
 //===========//
 void setup()
 {
-  ECE3_Init();
-  pinMode(left_nslp_pin,OUTPUT);
-  pinMode(left_dir_pin,OUTPUT);
-  pinMode(left_pwm_pin,OUTPUT);
-  
-  pinMode(right_nslp_pin,OUTPUT);
-  pinMode(right_dir_pin,OUTPUT);
-  pinMode(right_pwm_pin,OUTPUT);
+    ECE3_Init();
+    pinMode(left_nslp_pin,OUTPUT);
+    pinMode(left_dir_pin,OUTPUT);
+    pinMode(left_pwm_pin,OUTPUT);
 
-  digitalWrite(left_dir_pin,LOW);
-  digitalWrite(left_nslp_pin,HIGH);
-  
-  digitalWrite(right_dir_pin,LOW);
-  digitalWrite(right_nslp_pin,HIGH);
+    pinMode(right_nslp_pin,OUTPUT);
+    pinMode(right_dir_pin,OUTPUT);
+    pinMode(right_pwm_pin,OUTPUT);
 
+    digitalWrite(left_dir_pin,LOW);
+    digitalWrite(left_nslp_pin,HIGH);
+
+    digitalWrite(right_dir_pin,LOW);
+    digitalWrite(right_nslp_pin,HIGH);
+
+    previous_fused_value = errorCalculator();
 
 //   int baseSpd =40;
 //   moveFoward(0, baseSpd);
@@ -99,7 +101,9 @@ void loop()
     if(user_sw_2_reading){
         stopPointCount = 0;
         digitalWrite(LED_RF,LOW);
-        delay(1000)
+        moveFoward(0,0);
+        delay(1000);
+        previous_fused_value = errorCalculator();
     }
 }
 
