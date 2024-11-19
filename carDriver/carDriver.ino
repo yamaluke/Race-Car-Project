@@ -1,10 +1,11 @@
 #include <ECE3.h>
 #include<math.h>
 
-//==!! Design note: 
-//==!!              increase uturn speed line 210
-//==!!              on line 232 added a starting black square condition, if starting black box doesn't get read, then set the starting and reset stopPointCount to 1
-//==!!              potentially drop the der == 0 condition on line 239, with higher speed it might not work
+//==!!==// Design note: 
+//==!!==//              increase uturn speed line 210
+//==!!==//              if starting black box doesn't get read, then set the starting and reset stopPointCount to 1
+//==!!==//              potentially drop the der == 0 condition on line 239, with higher speed it might not work
+//==!!==//              could increase minimum speed to 60, based on previous test results, line 306
 
 //======================//
 //== Global Variables ==//
@@ -23,7 +24,7 @@ const int right_nslp_pin=11; // nslp ==> awake & ready for PWM
 const int right_dir_pin=30;
 const int right_pwm_pin=39;
 const int LED_RF = 41;
-const int user_sw_2_pin=74;
+const int user_sw_2_pin=74; // switch 2
 
 //== weights and other variables used by functions ==//
 int previous_fused_value = 0;       // holds the previous fused value, and will be used to calculate the change 
@@ -96,13 +97,13 @@ void loop()
         moveFoward(0,0);
     }
 
-    // if user presses switch, then reset the stopPointCount, allowing the car to move again
+    // if user presses switch 2, then reset the stopPointCount, allowing the car to move again
     user_sw_2_reading = digitalRead(user_sw_2_pin); 
     if(user_sw_2_reading){
-        stopPointCount = 0;
+        stopPointCount = 0; //==!!==//
         digitalWrite(LED_RF,LOW);
         moveFoward(0,0);
-        delay(1000);
+        // delay(1000);
         previous_fused_value = errorCalculator();
     }
 }
@@ -236,15 +237,15 @@ void motion(int location, int derLocation, int speed){
     float Kd = 1.0/200;     // derivative constant to calculate weight of turn
 
     //== check to see if car is at checkpoint ==//
-    if(derLocation == 0 && sensorState == -1){
+    if(derLocation == 0 && sensorState == -1){ //==!!==//
         speed = adaptiveSpeed(0, speed);
         if(stopPointCount == 0){
             moveFoward(0,speed);
-            delay(500);
+            delay(300);
         }else if(stopPointCount == 1){
             uturn();
             moveFoward(0, speed);
-            delay(500);
+            delay(300);
         }else{
             moveFoward(0,0);
         }
@@ -302,7 +303,7 @@ int adaptiveSpeed(float weight, int speed){
 
     //== determine new speed ==//
     int maxSpeed = 250;
-    int minSpeed = 40;
+    int minSpeed = 40;  //==!!==//
     float Ks = 1.3;         // constant for weight, must be greater than 1, larger = slower, smaller = faster
     weight++;
     
