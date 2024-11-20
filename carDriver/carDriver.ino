@@ -80,7 +80,7 @@ void setup()
 void loop()
 {
     // move car if stopPointCount hasn't reached its limit
-    if(stopPointCount < 6){
+    if(stopPointCount < 4){
         int fused_values=errorCalculator();
         int baseSpd = 60;
         int derivative_error;
@@ -98,14 +98,14 @@ void loop()
     }
 
     // if user presses switch 2, then reset the stopPointCount, allowing the car to move again
-    user_sw_2_reading = digitalRead(user_sw_2_pin); 
-    if(user_sw_2_reading){
-        stopPointCount = 0; //==!!==//
-        digitalWrite(LED_RF,LOW);
-        moveFoward(0,0);
-        // delay(1000);
-        previous_fused_value = errorCalculator();
-    }
+    // user_sw_2_reading = digitalRead(user_sw_2_pin); 
+    // if(user_sw_2_reading){
+    //     stopPointCount = 0; //==!!==//
+    //     digitalWrite(LED_RF,LOW);
+    //     moveFoward(0,0);
+    //     // delay(1000);
+    //     previous_fused_value = errorCalculator();
+    // }
 }
 
 
@@ -240,14 +240,14 @@ void motion(int location, int derLocation, int speed){
     //== check to see if car is at checkpoint ==//
     if(sensorState == -1){ 
         speed = adaptiveSpeed(0, speed);
-        if(stopPointCount < 2){
+        if(stopPointCount < 1){
             moveFoward(0,speed);
             delay(100);
-        }else if(stopPointCount == 2){
+        }else if(stopPointCount == 1){
             uturn();
             moveFoward(0, speed);
             delay(300);
-        }else if(stopPointCount < 5){
+        }else if(stopPointCount < 3){
             moveFoward(0,speed);
             delay(100);
         }else{
