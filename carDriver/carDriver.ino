@@ -24,13 +24,13 @@ const int right_nslp_pin=11; // nslp ==> awake & ready for PWM
 const int right_dir_pin=30;
 const int right_pwm_pin=39;
 const int LED_RF = 41;
-const int user_sw_2_pin=74; // switch 2
+// const int user_sw_2_pin=74; // switch 2
 
 //== weights and other variables used by functions ==//
 int previous_fused_value = 0;       // holds the previous fused value, and will be used to calculate the change 
 int stopPointCount = 0;             // number of times that the car has been on the black square 
 int sensorState = 0;                // Used to determine if the car is on the black square; 0: on track, 1: off track, -1: on black
-bool user_sw_2_reading = false;     // determine if user switch was pressed
+// bool user_sw_2_reading = false;     // determine if user switch was pressed
 
 //= Adaptive Speed on/off button ==//
 bool adaptiveSpeedButton = false;   // false = off, true = on
@@ -308,7 +308,7 @@ int adaptiveSpeed(float weight, int speed){
     //== determine new speed ==//
     int maxSpeed = 250;
     int minSpeed = 60;  //==!!==//
-    float Ks = 1.3;         // constant for weight, must be greater than 1, larger = slower, smaller = faster
+    // float Ks = 1.3;         // constant for weight, must be greater than 1, larger = slower, smaller = faster
     
     if(weight<0.5){
         speed *= 2;
