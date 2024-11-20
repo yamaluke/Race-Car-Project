@@ -80,7 +80,7 @@ void setup()
 void loop()
 {
     // move car if stopPointCount hasn't reached its limit
-    if(stopPointCount < 3){
+    if(stopPointCount < 6){
         int fused_values=errorCalculator();
         int baseSpd = 60;
         int derivative_error;
@@ -131,7 +131,7 @@ int errorCalculator(){
     for (int i = 0; i < 8; i++){
         // used to check if car is on black square
         // if it isn't, then at least one of the sensors will read a value less then 2000
-        if(sensorValues[i] < 2000){
+        if(sensorValues[i] < 1500){
             sensorState = 0;
         }
 
@@ -235,7 +235,7 @@ void uturn(){
 void motion(int location, int derLocation, int speed){
     int turnRange = 0;      // the point that the function decides to go from foward motion to turning motion
     float Kp = 1.0/1000;    // proportional constant to calculate weight of turn
-    float Kd = 1.0/200;     // derivative constant to calculate weight of turn
+    float Kd = 1.0/180;     // derivative constant to calculate weight of turn
 
     //== check to see if car is at checkpoint ==//
     if(sensorState == -1){ //==!!==//
@@ -309,9 +309,26 @@ int adaptiveSpeed(float weight, int speed){
     int maxSpeed = 250;
     int minSpeed = 60;  //==!!==//
     float Ks = 1.3;         // constant for weight, must be greater than 1, larger = slower, smaller = faster
+    
+    if(weight<0.5){
+        speed *= 2;
+    }else if(weight < 0.75){
+        speed *= 1.5;
+    }else if(weight < 1){
+        speed *= 1.3;
+    }else if(weight < 1.25){
+        
+    }else if(weight < 1.5){
+        
+    }
+
+    /* // failed attempt, not smooth enough
     weight++;
     
     speed /= log(weight*Ks);
+    */
+
+   // check that new speed is in proper range 
     if(speed > maxSpeed){
         return maxSpeed;
     }else if(speed < minSpeed){
@@ -319,4 +336,5 @@ int adaptiveSpeed(float weight, int speed){
     }else{
         return speed;
     }
+    
 }
