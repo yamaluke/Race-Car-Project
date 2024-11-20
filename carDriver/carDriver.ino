@@ -215,10 +215,10 @@ void turn(float weight, int speed){
 // Input:   none                                                //             
 // Output:  (void) rotates car                                  //
 void uturn(){
-    int speed = 250; //==!! Design note: maybe increase speed, and cut delay !!==//
+    int speed = 200; 
     turn(5.5,speed);
     digitalWrite(LED_RF,HIGH);  // to determine if uturn has been activated
-    delay(280);                // delay time to allow for full u-turn, can be adjusted based on battery level
+    delay(380);                // delay time to allow for full u-turn, can be adjusted based on battery level
     moveFoward(0,0);
 }
 
@@ -238,7 +238,7 @@ void motion(int location, int derLocation, int speed){
     float Kd = 1.0/180;     // derivative constant to calculate weight of turn
 
     //== check to see if car is at checkpoint ==//
-    if(sensorState == -1){ //==!!==//
+    if(sensorState == -1){ 
         speed = adaptiveSpeed(0, speed);
         if(stopPointCount < 2){
             moveFoward(0,speed);
@@ -319,7 +319,7 @@ int adaptiveSpeed(float weight, int speed){
     }else if(weight < 1.25){
         
     }else if(weight < 1.5){
-        
+
     }
 
     /* // failed attempt, not smooth enough
