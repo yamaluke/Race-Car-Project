@@ -2,10 +2,6 @@
 #include<math.h>
 
 //==!!==// Design note: 
-//==!!==//              increase uturn speed line 210
-//==!!==//              if starting black box doesn't get read, then set the starting and reset stopPointCount to 1
-//==!!==//              potentially drop the der == 0 condition on line 239, with higher speed it might not work
-//==!!==//              could increase minimum speed to 60, based on previous test results, line 306
 
 //======================//
 //== Global Variables ==//
@@ -33,7 +29,7 @@ int sensorState = 0;                // Used to determine if the car is on the bl
 // bool user_sw_2_reading = false;     // determine if user switch was pressed
 
 //= Adaptive Speed on/off button ==//
-bool adaptiveSpeedButton = false;   // false = off, true = on
+bool adaptiveSpeedButton = true;   // false = off, true = on
 
 //================//
 //== Prototypes ==//
@@ -307,7 +303,7 @@ int adaptiveSpeed(float weight, int speed){
 
     //== determine new speed ==//
     int maxSpeed = 250;
-    int minSpeed = 60;  //==!!==//
+    int minSpeed = 60;  
     // float Ks = 1.3;         // constant for weight, must be greater than 1, larger = slower, smaller = faster
     
     if(weight<0.5){
@@ -315,11 +311,11 @@ int adaptiveSpeed(float weight, int speed){
     }else if(weight < 0.75){
         speed *= 1.5;
     }else if(weight < 1){
-        speed *= 1.3;
+        speed *= 1.25;
     }else if(weight < 1.25){
-        
+        // speed *= X.X;
     }else if(weight < 1.5){
-
+        // speed *= X.X;
     }
 
     /* // failed attempt, not smooth enough
