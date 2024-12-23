@@ -78,7 +78,7 @@ void loop()
     // move car if stopPointCount hasn't reached its limit
     if(stopPointCount < 4){
         int fused_values=errorCalculator();
-        int baseSpd = 60;
+        int baseSpd = 80;
         int derivative_error;
 
         derivative_error = (fused_values - previous_fused_value);
@@ -94,14 +94,14 @@ void loop()
     }
 
     // if user presses switch 2, then reset the stopPointCount, allowing the car to move again
-    // user_sw_2_reading = digitalRead(user_sw_2_pin); 
-    // if(user_sw_2_reading){
-    //     stopPointCount = 0; //==!!==//
-    //     digitalWrite(LED_RF,LOW);
-    //     moveFoward(0,0);
-    //     // delay(1000);
-    //     previous_fused_value = errorCalculator();
-    // }
+    /*user_sw_2_reading = digitalRead(user_sw_2_pin); 
+    if(user_sw_2_reading){
+        stopPointCount = 0; //==!!==//
+        digitalWrite(LED_RF,LOW);
+        moveFoward(0,0);
+        // delay(1000);
+        previous_fused_value = errorCalculator();
+    }*/
 }
 
 
@@ -131,20 +131,14 @@ int errorCalculator(){
             sensorState = 0;
         }
 
-        // remove minimum
-        currentValue[i] = (float)sensorValues[i] - MINIMUM[i];
-
-        //divide by maximum
-        currentValue[i] /= MAXIMUM[i];
-
-        //multiply by 1000
-        currentValue[i] *= 1000;
-
-        //multiply by weights
-        currentValue[i] *= WEIGHTS[i];
+        // normalize and weight sensor values
+        currentValue[i] = (float)sensorValues[i] - MINIMUM[i];  // remove minimum
+        currentValue[i] /= MAXIMUM[i];                          // divide by maximum
+        currentValue[i] *= 1000;                                // multiply by 1000
+        currentValue[i] *= WEIGHTS[i];                          // multiply by weights
     }
 
-    //take average of all normalized values 
+    // take average of all normalized values 
     for (int i = 0; i < 8; i++){
         fusedValue += currentValue[i];   
     }
@@ -183,9 +177,10 @@ void moveFoward(float weight, int speed){
 
 
 //== turn: used to make very tight turns                      ==//
-// Input:   weight (float): -5.5 and 5.5, no zero. (-) is left, //
-//          (+) is right, and the magnitude changes how much it // 
-//          turns. The larger the weight, the tighter the turn. //
+// Input:   weight (float): magnitude between -5.5 and 5.5,     //
+//          but no zero. Negative is left, amd positive is      //
+//          right, and the magnitude changes how much it turns. // 
+//          The larger the weight, the tighter the turn.        //
 //          speed (int): determines speed of car                //             
 // Output:  (void) moves the car based on the weights           //
 void turn(float weight, int speed){
@@ -229,11 +224,12 @@ void uturn(){
 // Note:    sensorState and stopPointCount must be declared     // 
 //          in global scope.                                    //
 void motion(int location, int derLocation, int speed){
-    int turnRange = 0;      // the point that the function decides to go from foward motion to turning motion
-    float Kp = 1.0/1000;    // proportional constant to calculate weight of turn
-    float Kd = 1.0/180;     // derivative constant to calculate weight of turn
+    int turnRange = 0.3;    // the point that the function decides to go from foward motion to turning motion
+    float Kp = 1.0/600;     // proportional constant to calculate weight of turn
+    float Kd = 1.0/160;     // derivative constant to calculate weight of turn
 
     //== check to see if car is at checkpoint ==//
+    //== If not, it will proceed normally     ==//
     if(sensorState == -1){ 
         speed = adaptiveSpeed(0, speed);
         if(stopPointCount < 1){
@@ -318,12 +314,6 @@ int adaptiveSpeed(float weight, int speed){
         // speed *= X.X;
     }
 
-    /* // failed attempt, not smooth enough
-    weight++;
-    
-    speed /= log(weight*Ks);
-    */
-
    // check that new speed is in proper range 
     if(speed > maxSpeed){
         return maxSpeed;
@@ -332,5 +322,4 @@ int adaptiveSpeed(float weight, int speed){
     }else{
         return speed;
     }
-    
 }
